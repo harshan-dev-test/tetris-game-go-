@@ -4,198 +4,20 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"tetris-game/Tetrominoes"
 
 	// "math/rand"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
+	"tetris-game/Grid"
 )
 
-type Grid struct {
-	Width  int
-	Height int
-	Data   [][]int
-}
 
-var I = [4][][]int{
-	{
-		{0, 0, 0, 0},
-		{1, 1, 1, 1},
-		{0, 0, 0, 0},
-		{0, 0, 0, 0},
-	},
-	{
-		{0, 0, 1, 0},
-		{0, 0, 1, 0},
-		{0, 0, 1, 0},
-		{0, 0, 1, 0},
-	},
-	{
-		{0, 0, 0, 0},
-		{0, 0, 0, 0},
-		{1, 1, 1, 1},
-		{0, 0, 0, 0},
-	},
-	{
-		{0, 1, 0, 0},
-		{0, 1, 0, 0},
-		{0, 1, 0, 0},
-		{0, 1, 0, 0},
-	},
-}
 
-// O-piece (Yellow)
-var O = [4][][]int{
-	{
-		{0, 1, 1, 0},
-		{0, 1, 1, 0},
-		{0, 0, 0, 0},
-		{0, 0, 0, 0},
-	},
-	{
-		{0, 1, 1, 0},
-		{0, 1, 1, 0},
-		{0, 0, 0, 0},
-		{0, 0, 0, 0},
-	},
-	{
-		{0, 1, 1, 0},
-		{0, 1, 1, 0},
-		{0, 0, 0, 0},
-		{0, 0, 0, 0},
-	},
-	{
-		{0, 1, 1, 0},
-		{0, 1, 1, 0},
-		{0, 0, 0, 0},
-		{0, 0, 0, 0},
-	},
-}
 
-// T-piece (Purple)
-var T = [4][][]int{
-	{
-		{0, 1, 0},
-		{1, 1, 1},
-		{0, 0, 0},
-	},
-	{
-		{0, 1, 0},
-		{0, 1, 1},
-		{0, 1, 0},
-	},
-	{
-		{0, 0, 0},
-		{1, 1, 1},
-		{0, 1, 0},
-	},
-	{
-		{0, 1, 0},
-		{1, 1, 0},
-		{0, 1, 0},
-	},
-}
-
-// S-piece (Green)
-var S = [4][][]int{
-	{
-		{0, 1, 1},
-		{1, 1, 0},
-		{0, 0, 0},
-	},
-	{
-		{0, 1, 0},
-		{0, 1, 1},
-		{0, 0, 1},
-	},
-	{
-		{0, 0, 0},
-		{0, 1, 1},
-		{1, 1, 0},
-	},
-	{
-		{1, 0, 0},
-		{1, 1, 0},
-		{0, 1, 0},
-	},
-}
-
-// Z-piece (Red) - Corrected from your original
-var Z = [4][][]int{
-	{
-		{1, 1, 0},
-		{0, 1, 1},
-		{0, 0, 0},
-	},
-	{
-		{0, 0, 1},
-		{0, 1, 1},
-		{0, 1, 0},
-	},
-	{
-		{0, 0, 0},
-		{1, 1, 0},
-		{0, 1, 1},
-	},
-	{
-		{0, 1, 0},
-		{1, 1, 0},
-		{1, 0, 0},
-	},
-}
-
-// J-piece (Blue)
-var J = [4][][]int{
-	{
-		{1, 0, 0},
-		{1, 1, 1},
-		{0, 0, 0},
-	},
-	{
-		{0, 1, 1},
-		{0, 1, 0},
-		{0, 1, 0},
-	},
-	{
-		{0, 0, 0},
-		{1, 1, 1},
-		{0, 0, 1},
-	},
-	{
-		{0, 1, 0},
-		{0, 1, 0},
-		{1, 1, 0},
-	},
-}
-
-// L-piece (Orange)
-var L = [4][][]int{
-	{
-		{0, 0, 1},
-		{1, 1, 1},
-		{0, 0, 0},
-	},
-	{
-		{0, 1, 0},
-		{0, 1, 0},
-		{0, 1, 1},
-	},
-	{
-		{0, 0, 0},
-		{1, 1, 1},
-		{1, 0, 0},
-	},
-	{
-		{1, 1, 0},
-		{0, 1, 0},
-		{0, 1, 0},
-	},
-}
-
-var AllTetrominos = [7][4][][]int{I, O, T, S, Z, J, L}
-
-var currentActiveTetrom = T[0]
-var tempRandomTetrom = T[0]
+var currentActiveTetrom = tetrominoes.T[0]
+var tempRandomTetrom = tetrominoes.T[0]
 var activeTetrom = 0
 var currentTetroType = 2
 var currentRotation = 0
@@ -206,16 +28,6 @@ var startY = 7
 var gameOver = false
 var gameRunning = true
 var restartChan = make(chan bool, 1)
-
-var TetrominoColors = map[int]tcell.Color{
-	0: tcell.ColorTurquoise,  // I
-	1: tcell.ColorYellow,     // O
-	2: tcell.ColorPurple,     // T
-	3: tcell.ColorGreen,      // S
-	4: tcell.ColorRed,        // Z
-	5: tcell.ColorBlue,       // J
-	6: tcell.ColorOrange,     // L
-}
 
 var score int = 0
 var level int = 0
@@ -283,20 +95,20 @@ func drawText(s tcell.Screen, x, y int, text string, style tcell.Style) {
 	}
 }
 
-func NewGrid(width, height int) *Grid {
+func NewGrid(width, height int) *grid.Grid {
 	data := make([][]int, height)
 	for i := range data {
 		data[i] = make([]int, width)
 	}
 
-	return &Grid{
+	return &grid.Grid{
 		Width:  width,
 		Height: height,
 		Data:   data,
 	}
 }
 
-func ShowGrid(grid *Grid) {
+func ShowGrid(grid *grid.Grid) {
 	data := grid.Data
 
 	for i := range data {
@@ -308,7 +120,7 @@ func ShowGrid(grid *Grid) {
 	}
 }
 
-func DrawGrid(s tcell.Screen, grid *Grid, startX, startY int, style tcell.Style) {
+func DrawGrid(s tcell.Screen, grid *grid.Grid, startX, startY int, style tcell.Style) {
 	width := grid.Width
 	height := grid.Height
 	data := grid.Data
@@ -358,7 +170,7 @@ func ClearPrevPiece(startX, startY int, tetromen *[][]int, s tcell.Screen, style
 	}
 }
 
-func ShowPiece(startX, startY int, tetromen *[][]int, s tcell.Screen, style tcell.Style, grid *Grid) {
+func ShowPiece(startX, startY int, tetromen *[][]int, s tcell.Screen, style tcell.Style, grid *grid.Grid) {
 	piece := *tetromen
 
 	for i := 0; i < len(piece); i++ {
@@ -371,14 +183,14 @@ func ShowPiece(startX, startY int, tetromen *[][]int, s tcell.Screen, style tcel
 					continue
 				}
 
-				color := TetrominoColors[currentTetroType]
+				color := tetrominoes.TetrominoColors[currentTetroType]
 				s.SetContent(cellX, cellY, '█', nil, style.Foreground(color))
 			}
 		}
 	}
 }
 
-func canMovePiece(newX, newY int, tetromen *[][]int, grid *Grid) bool {
+func canMovePiece(newX, newY int, tetromen *[][]int, grid *grid.Grid) bool {
 
 	piece := *tetromen
 	for i := 0; i < len(piece); i++ {
@@ -406,14 +218,14 @@ func canMovePiece(newX, newY int, tetromen *[][]int, grid *Grid) bool {
 
 func RandomTetromGenerator(tempRandomTetrom *[][]int, activeTetrom int) {
 	activeTetrom = activeTetrom % 4
-	*tempRandomTetrom = T[activeTetrom]
+	*tempRandomTetrom = tetrominoes.T[activeTetrom]
 	
 }
 
-func RotateTetrom(currentActiveTetrom *[][]int, startX, startY int, s tcell.Screen, style tcell.Style, grid *Grid) {
+func RotateTetrom(currentActiveTetrom *[][]int, startX, startY int, s tcell.Screen, style tcell.Style, grid *grid.Grid) {
 	
 	nextRotation := (currentRotation+1) %4
-	tempPiece := AllTetrominos[currentTetroType][nextRotation]
+	tempPiece := tetrominoes.AllTetrominos[currentTetroType][nextRotation]
 
 	if canMovePiece(startX, startY, &tempPiece, grid) {
 		ClearPrevPiece(startX, startY, currentActiveTetrom, s, style)
@@ -424,7 +236,7 @@ func RotateTetrom(currentActiveTetrom *[][]int, startX, startY int, s tcell.Scre
 	}
 }
 
-func LockGridTetro(newX, newY int, tetromone *[][]int, grid *Grid) {
+func LockGridTetro(newX, newY int, tetromone *[][]int, grid *grid.Grid) {
 	piece := *tetromone
 	for i := 0; i < len(piece); i++ {
 		for j := 0; j < len(piece[i]); j++ {
@@ -440,7 +252,7 @@ func LockGridTetro(newX, newY int, tetromone *[][]int, grid *Grid) {
 	}
 }
 
-func ResetGame(grid *Grid) {
+func ResetGame(grid *grid.Grid) {
 	for y := range grid.Data {
 		for x := range grid.Data[y] {
 			grid.Data[y][x] = 0
@@ -448,7 +260,7 @@ func ResetGame(grid *Grid) {
 	}
 }
 
-func FallingPieceLoop(s tcell.Screen, grid *Grid, style tcell.Style) {
+func FallingPieceLoop(s tcell.Screen, grid *grid.Grid, style tcell.Style) {
 
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
@@ -511,7 +323,7 @@ func FallingPieceLoop(s tcell.Screen, grid *Grid, style tcell.Style) {
 	}
 }
 
-func InitializeGame(s tcell.Screen, grid *Grid, style tcell.Style) {
+func InitializeGame(s tcell.Screen, grid *grid.Grid, style tcell.Style) {
 
 	gameOver = false
 	gameRunning = true
@@ -534,7 +346,7 @@ func InitializeGame(s tcell.Screen, grid *Grid, style tcell.Style) {
 	go FallingPieceLoop(s, grid, style)
 }
 
-func HandlerGameInput(ev *tcell.EventKey, s tcell.Screen, grid *Grid, style tcell.Style) {
+func HandlerGameInput(ev *tcell.EventKey, s tcell.Screen, grid *grid.Grid, style tcell.Style) {
 
 	switch ev.Key() {
 	case tcell.KeyEscape:
@@ -606,7 +418,7 @@ func HandlerGameInput(ev *tcell.EventKey, s tcell.Screen, grid *Grid, style tcel
 	}
 }
 
-func HandleGameOverInput(ev *tcell.EventKey, s tcell.Screen, grid *Grid, style tcell.Style) {
+func HandleGameOverInput(ev *tcell.EventKey, s tcell.Screen, grid *grid.Grid, style tcell.Style) {
 	switch ev.Key() {
 	case tcell.KeyEscape:
 		s.Fini()
@@ -631,10 +443,10 @@ func GenerateRandomTetromino() {
 	tetroType := rand.Intn(7)
 	currentTetroType = tetroType
 	currentRotation = 0
-	currentActiveTetrom = AllTetrominos[tetroType][0]
+	currentActiveTetrom = tetrominoes.AllTetrominos[tetroType][0]
 }
 
-func IsLineComplete(grid *Grid, row int) bool {
+func IsLineComplete(grid *grid.Grid, row int) bool {
 	for col := 0; col < grid.Width; col++ {
 		if grid.Data[row][col] == 0{
 			return false
@@ -643,7 +455,7 @@ func IsLineComplete(grid *Grid, row int) bool {
 	return true
 }
 
-func ClearLine(grid *Grid, lineIndex int) {
+func ClearLine(grid *grid.Grid, lineIndex int) {
 	for row := lineIndex; row > 0; row-- {
 		copy(grid.Data[row], grid.Data[row-1])
 	}
@@ -653,7 +465,7 @@ func ClearLine(grid *Grid, lineIndex int) {
 	}
 }
 
-func ClearCompletedLines(grid *Grid) int {
+func ClearCompletedLines(grid *grid.Grid) int {
 	linesCleared := 0
 
 	for row := grid.Height -1 ; row >= 0; row -- {
@@ -664,13 +476,10 @@ func ClearCompletedLines(grid *Grid) int {
 		}
 	}
 	if linesCleared > 0 {
-		// Update score
 		score += CalculateScore(linesCleared)
-		
-		// Update total lines cleared
+	
 		totalLinesCleared += linesCleared
 		
-		// Update level
 		UpdateLevel()
 	}
 	
@@ -695,28 +504,24 @@ func UpdateLevel() {
 }
 
 func getFallingSpeed() time.Duration {
-	// Speed increases with level
 	baseSpeed := 600 - (level-1)*50
 	if baseSpeed < 100 {
-		baseSpeed = 100 // Minimum speed
+		baseSpeed = 100
 	}
 	return time.Duration(baseSpeed) * time.Millisecond
 }
 
 func UpdateFallingSpeed() {
-	// This will be handled by recreating the ticker in the falling loop
 }
 
 func displayGameStats(s tcell.Screen, style tcell.Style) {
-	// Display score
+
 	scoreText := fmt.Sprintf("Score: %d", score)
 	drawText(s, 20, 8, scoreText, style.Foreground(tcell.ColorDarkCyan))
 	
-	// Display level
 	levelText := fmt.Sprintf("Level: %d", level)
 	drawText(s, 20, 9, levelText, style.Foreground(tcell.ColorGreen))
 	
-	// Display lines cleared
 	linesText := fmt.Sprintf("Lines: %d", totalLinesCleared)
 	drawText(s, 20, 10, linesText, style.Foreground(tcell.ColorYellow))
 }
