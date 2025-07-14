@@ -5,12 +5,13 @@ import (
 	"log"
 	"math/rand"
 	"tetris-game/Tetrominoes"
+	"tetris-game/game"
 
 	// "math/rand"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
-	"tetris-game/Grid"
+	grid "tetris-game/grid"
 )
 
 
@@ -53,12 +54,13 @@ func main() {
 
 	inputChan := make(chan *tcell.EventKey, 3)
 
-	defStyle := tcell.StyleDefault.Background(tcell.ColorReset).Foreground(tcell.ColorReset)
-	s.SetStyle(defStyle)
+	// defStyle := tcell.StyleDefault.Background(tcell.ColorReset).Foreground(tcell.ColorReset)
+	// s.SetStyle(defStyle)
 
-	grid := NewGrid(10, 20)
+	// grid := NewGrid(10, 20)
+	state := InitGameState(s)
 
-	InitializeGame(s, grid, defStyle)
+	InitializeGame(state)
 
 	go func() {
 		for {
@@ -73,12 +75,12 @@ func main() {
 		select {
 		case ev := <- inputChan:
 			if gameOver {
-				HandleGameOverInput(ev, s, grid, defStyle)
+				HandleGameOverInput(ev, state.Screen, state.Grid, state.Style)
 			} else {
-				HandlerGameInput(ev, s, grid, defStyle)
+				HandlerGameInput(ev, state.Screen, state.Grid, state.Style)
 			}
 		case <- restartChan:
-			InitializeGame(s, grid, defStyle)
+			InitializeGame(state)
 		}
 	}
 }
@@ -323,27 +325,27 @@ func FallingPieceLoop(s tcell.Screen, grid *grid.Grid, style tcell.Style) {
 	}
 }
 
-func InitializeGame(s tcell.Screen, grid *grid.Grid, style tcell.Style) {
+func InitializeGame(state *game.GameState) {
 
 	gameOver = false
 	gameRunning = true
 	startX = 7
 	startY = 7
 
-	ResetGame(grid)
+	ResetGame(state.Grid)
 	resetGameStats()
 
 	GenerateRandomTetromino()
 
-	s.Clear()
-	DrawGrid(s, grid, 5, 5, style.Foreground(tcell.ColorWhite))
-	drawText(s, 2, 2, "TETRIS - Press Q to quit", style.Foreground(tcell.ColorBlue))
+	state.Screen.Clear()
+	DrawGrid(state.Screen, state.Grid, 5, 5, state.Style.Foreground(tcell.ColorWhite))
+	drawText(state.Screen, 2, 2, "TETRIS - Press Q to quit", state.Style.Foreground(tcell.ColorBlue))
 
-	displayGameStats(s, style)
+	displayGameStats(state.Screen, state.Style)
 
-	s.Show()
+	state.Screen.Show()
 
-	go FallingPieceLoop(s, grid, style)
+	go FallingPieceLoop(state.Screen, state.Grid, state.Style)
 }
 
 func HandlerGameInput(ev *tcell.EventKey, s tcell.Screen, grid *grid.Grid, style tcell.Style) {
@@ -530,4 +532,30 @@ func resetGameStats() {
 	score = 0
 	level = 1
 	totalLinesCleared = 0
+}
+
+func InitGameState(s tcell.Screen) *game.GameState{
+
+	defStyle := tcell.StyleDefault.Background(tcell.ColorReset).Foreground(tcell.ColorReset)
+	s.SetStyle(defStyle)
+
+	return &game.GameState{
+		Screen: s,
+		Grid: NewGrid(10,20),
+		Style: defStyle,
+		CurrentActiveTetrom: tetrominoes.T[0],
+		TempRandomTetrom: tetrominoes.T[0],
+		ActiveTetrom: 0,
+		CurrentTetroType: 2,
+		CurrentRotation: 0,
+		StartX: 7,
+		StartY: 7,
+		GameOver: false,
+		GameRunning: true,
+		RestartChan: make(chan bool, 1),
+		Score: 0,
+		Level: 0,
+		TotalLinesCleared: 0,
+	}
+
 }
