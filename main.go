@@ -74,11 +74,11 @@ func main() {
 		case ev := <- inputChan:
 			if gameOver {
 				fmt.Println("cha", state.RestartChan)
-				HandleGameOverInput(ev, state)
+				game.HandleGameOverInput(ev, state)
 			} else {
 				HandlerGameInput(ev, state)
 			}
-		case <- restartChan:
+		case <- state.RestartChan:
 			InitializeGame(state)
 		}
 	}
@@ -371,26 +371,6 @@ func HandlerGameInput(ev *tcell.EventKey, state *state.GameState) {
 	}
 }
 
-func HandleGameOverInput(ev *tcell.EventKey, state *state.GameState) {
-	switch ev.Key() {
-	case tcell.KeyEscape:
-		state.Screen.Fini()
-		return
-	case tcell.KeyRune:
-		switch ev.Rune() {
-		case 's', 'S':
-			drawText(state.Screen, 2, 1, "Restarting game...", state.Style.Foreground(tcell.ColorGreen))
-			state.Screen.Show()
-			time.Sleep(500 * time.Millisecond)
-			restartChan <- true
-		case 'q', 'Q':
-			drawText(state.Screen, 2, 1, "Q pressed. Exiting.", state.Style.Foreground(tcell.ColorRed))
-			state.Screen.Show()
-			state.Screen.Fini()
-			return
-		}
-	}
-}
 
 func GenerateRandomTetromino() {
 	tetroType := rand.Intn(7)
