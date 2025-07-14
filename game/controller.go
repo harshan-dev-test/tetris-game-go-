@@ -3,13 +3,14 @@ package game
 import (
 	// "math/rand"
 	"fmt"
+	"tetris-game/state"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
 )
 
 
-func HandleGameOverInput(ev *tcell.EventKey, state *GameState) {
+func HandleGameOverInput(ev *tcell.EventKey, state *state.GameState) {
 	fmt.Println("chann", state.RestartChan)
 	switch ev.Key() {
 	case tcell.KeyEscape:

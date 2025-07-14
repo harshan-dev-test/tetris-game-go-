@@ -3,44 +3,16 @@ package game
 import (
 	tetrominoes "tetris-game/Tetrominoes"
 	grid "tetris-game/grid"
+	state "tetris-game/state"
 
 	"github.com/gdamore/tcell/v2"
 )
-
-type GameState struct {
-
-	Screen tcell.Screen
-	Grid *grid.Grid
-	Style tcell.Style
-
-	CurrentActiveTetrom [][]int
-	TempRandomTetrom [][]int
-	ActiveTetrom int
-	CurrentTetroType int
-	CurrentRotation int
-
-	StartX int
-	StartY int
-
-	NewX int
-	NewY int
-
-	GameOver bool
-	GameRunning bool
-	RestartChan chan bool
-
-	Score int
-	Level int
-	TotalLinesCleared int
-
-}
-
-func InitGameState(s tcell.Screen) *GameState{
+func InitGameState(s tcell.Screen) *state.GameState{
 
 	defStyle := tcell.StyleDefault.Background(tcell.ColorReset).Foreground(tcell.ColorReset)
 	s.SetStyle(defStyle)
 
-	return &GameState{
+	return &state.GameState{
 		Screen: s,
 		Grid: grid.NewGrid(10,20),
 		Style: defStyle,
