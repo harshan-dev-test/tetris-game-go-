@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"math/rand"
 	"tetris-game/Tetrominoes"
 	game "tetris-game/game"
 	"tetris-game/state"
@@ -15,26 +14,6 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 )
-
-
-
-
-var currentActiveTetrom = tetrominoes.T[0]
-var tempRandomTetrom = tetrominoes.T[0]
-var activeTetrom = 0
-var currentTetroType = 2
-var currentRotation = 0
-
-var startX = 7
-var startY = 7
-
-var gameOver = false
-var gameRunning = true
-var restartChan = make(chan bool, 1)
-
-var score int = 0
-var level int = 0
-var totalLinesCleared int = 0
 
 var lineScores = map[int]int{
 	1: 100,  // Single
@@ -72,7 +51,7 @@ func main() {
 	for {
 		select {
 		case ev := <- inputChan:
-			if gameOver {
+			if state.GameOver {
 				fmt.Println("cha", state.RestartChan)
 				game.HandleGameOverInput(ev, state)
 			} else {
@@ -125,22 +104,22 @@ func ClearPrevPiece(startX, startY int, tetromen *[][]int, s tcell.Screen, style
 		}
 	}
 }
-
-func ShowPiece(startX, startY int, tetromen *[][]int, s tcell.Screen, style tcell.Style, grid *grid.Grid) {
-	piece := *tetromen
+// ShowPiece(state.StartX, state.StartY, &state.CurrentActiveTetrom, state.Screen, state.Style, state.Grid, state)
+func ShowPiece(state *state.GameState) {
+	piece := state.CurrentActiveTetrom
 
 	for i := 0; i < len(piece); i++ {
 		for j := 0; j < len(piece[i]); j++ {
-			cellX := startX + j
-			cellY := startY + i
+			cellX := state.StartX + j
+			cellY := state.StartY + i
 
 			if piece[i][j] == 1 {
 				if cellX < 6 || cellX > 15 || cellY < 6 || cellY > 25 {
 					continue
 				}
 
-				color := tetrominoes.TetrominoColors[currentTetroType]
-				s.SetContent(cellX, cellY, '█', nil, style.Foreground(color))
+				color := tetrominoes.TetrominoColors[state.CurrentTetroType]
+				state.Screen.SetContent(cellX, cellY, '█', nil, state.Style.Foreground(color))
 			}
 		}
 	}
@@ -172,22 +151,16 @@ func canMovePiece(newX, newY int, tetromen *[][]int, grid *grid.Grid) bool {
 	return true
 }
 
-func RandomTetromGenerator(tempRandomTetrom *[][]int, activeTetrom int) {
-	activeTetrom = activeTetrom % 4
-	*tempRandomTetrom = tetrominoes.T[activeTetrom]
+func RotateTetrom(state *state.GameState) {
 	
-}
+	nextRotation := (state.CurrentRotation+1) %4
+	tempPiece := tetrominoes.AllTetrominos[state.CurrentTetroType][nextRotation]
 
-func RotateTetrom(currentActiveTetrom *[][]int, startX, startY int, s tcell.Screen, style tcell.Style, grid *grid.Grid) {
-	
-	nextRotation := (currentRotation+1) %4
-	tempPiece := tetrominoes.AllTetrominos[currentTetroType][nextRotation]
-
-	if canMovePiece(startX, startY, &tempPiece, grid) {
-		ClearPrevPiece(startX, startY, currentActiveTetrom, s, style)
-		currentRotation = nextRotation
-		*currentActiveTetrom = tempPiece
-		ShowPiece(startX, startY, currentActiveTetrom, s, style, grid)
+	if canMovePiece(state.StartX, state.StartY, &tempPiece, state.Grid) {
+		ClearPrevPiece(state.StartX, state.StartY, &state.CurrentActiveTetrom, state.Screen, state.Style)
+		state.CurrentRotation = nextRotation
+		state.CurrentActiveTetrom = tempPiece
+		ShowPiece(state)
 
 	}
 }
@@ -208,15 +181,15 @@ func LockGridTetro(newX, newY int, tetromone *[][]int, grid *grid.Grid) {
 	}
 }
 
-func ResetGame(grid *grid.Grid) {
-	for y := range grid.Data {
-		for x := range grid.Data[y] {
-			grid.Data[y][x] = 0
+func ResetGame(state *state.GameState) {
+	for y := range state.Grid.Data {
+		for x := range state.Grid.Data[y] {
+			state.Grid.Data[y][x] = 0
 		}
 	}
 }
 
-func FallingPieceLoop(s tcell.Screen, grid *grid.Grid, style tcell.Style) {
+func FallingPieceLoop(state *state.GameState) {
 
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
@@ -224,25 +197,25 @@ func FallingPieceLoop(s tcell.Screen, grid *grid.Grid, style tcell.Style) {
 	for {
 		select {
 		case <-ticker.C:
-			if !gameRunning {
+			if !state.GameRunning {
 				return
 			}
-			ticker.Reset(getFallingSpeed())
+			ticker.Reset(getFallingSpeed(state))
 		}
 
-		newY := startY + 1
+		state.NewY = state.StartY + 1
 		
-		if canMovePiece(startX, newY, &currentActiveTetrom, grid) {
-			ClearPrevPiece(startX, startY, &currentActiveTetrom, s, style)
-			startY = newY
-			ShowPiece(startX, startY, &currentActiveTetrom, s, style, grid)
-			displayGameStats(s, style)
-			s.Show()
+		if canMovePiece(state.StartX, state.NewY, &state.CurrentActiveTetrom, state.Grid) {
+			ClearPrevPiece(state.StartX, state.StartY, &state.CurrentActiveTetrom, state.Screen, state.Style)
+			state.StartY = state.NewY
+			ShowPiece(state)
+			displayGameStats(state)
+			state.Screen.Show()
 		} else {
-			LockGridTetro(startX, startY, &currentActiveTetrom, grid)
-			linesCleared := ClearCompletedLines(grid)
-			grid.DrawGrid(s, grid, 5, 5, style.Foreground(tcell.ColorWhite))
-			displayGameStats(s, style)
+			LockGridTetro(state.StartX, state.StartY, &state.CurrentActiveTetrom, state.Grid)
+			linesCleared := ClearCompletedLines(state)
+			state.Grid.DrawGrid(state.Screen, state.Grid, 5, 5, state.Style.Foreground(tcell.ColorWhite))
+			displayGameStats(state)
 
 			if linesCleared > 0 {
 				var lineType string
@@ -256,23 +229,23 @@ func FallingPieceLoop(s tcell.Screen, grid *grid.Grid, style tcell.Style) {
 				case 4:
 					lineType = "TETRIS!"
 				}
-				linesClearedText := fmt.Sprintf("%s +%d pts", lineType, CalculateScore(linesCleared))
-				drawText(s, 20, 12, linesClearedText, style.Foreground(tcell.ColorRed))
+				linesClearedText := fmt.Sprintf("%s +%d pts", lineType, CalculateScore(linesCleared, state))
+				drawText(state.Screen, 20, 12, linesClearedText, state.Style.Foreground(tcell.ColorRed))
 			}
 
-			GenerateRandomTetromino()
-			startX = 7
-			startY = 7
-			if canMovePiece(startX, startY, &currentActiveTetrom, grid) {
-				ShowPiece(startX, startY, &currentActiveTetrom, s, style, grid)
-				s.Show()
+			tetrominoes.GenerateRandomTetromino(state)
+			state.StartX = 7
+			state.StartY = 7
+			if canMovePiece(state.StartX, state.StartY, &state.CurrentActiveTetrom, state.Grid) {
+				ShowPiece(state)
+				state.Screen.Show()
 			} else {
-				gameOver = true
-				gameRunning = false
-				drawText(s, 2, 1, "Game Over", style.Foreground(tcell.ColorRed))
-				finalScoreText := fmt.Sprintf("Final Score: %d", score)
-				drawText(s, 2, 2, finalScoreText, style.Foreground(tcell.ColorWhite))
-				s.Show()
+				state.GameOver = true
+				state.GameRunning = false
+				drawText(state.Screen, 2, 1, "Game Over", state.Style.Foreground(tcell.ColorRed))
+				finalScoreText := fmt.Sprintf("Final Score: %d", state.Score)
+				drawText(state.Screen, 2, 2, finalScoreText, state.Style.Foreground(tcell.ColorWhite))
+				state.Screen.Show()
 				return
 			}
 		}
@@ -281,26 +254,26 @@ func FallingPieceLoop(s tcell.Screen, grid *grid.Grid, style tcell.Style) {
 
 func InitializeGame(state *state.GameState) {
 
-	gameOver = false
-	gameRunning = true
-	startX = 7
-	startY = 7
+	state.GameOver = false
+	state.GameRunning = true
+	state.StartX = 7
+	state.StartY = 7
 
-	ResetGame(state.Grid)
-	resetGameStats()
+	ResetGame(state)
+	resetGameStats(state)
 
-	GenerateRandomTetromino()
+	tetrominoes.GenerateRandomTetromino(state)
 
 	state.Screen.Clear()
 	
 	state.Grid.DrawGrid(state.Screen, state.Grid, 5, 5, state.Style.Foreground(tcell.ColorWhite))
 	drawText(state.Screen, 2, 2, "TETRIS - Press Q to quit", state.Style.Foreground(tcell.ColorBlue))
 
-	displayGameStats(state.Screen, state.Style)
+	displayGameStats(state)
 
 	state.Screen.Show()
 
-	go FallingPieceLoop(state.Screen, state.Grid, state.Style)
+	go FallingPieceLoop(state)
 }
 
 func HandlerGameInput(ev *tcell.EventKey, state *state.GameState) {
@@ -313,131 +286,123 @@ func HandlerGameInput(ev *tcell.EventKey, state *state.GameState) {
 		return
 	case tcell.KeyRight:
 		drawText(state.Screen, 2, 1, "Right", state.Style)
-		newX := startX + 1
+		state.NewX = state.StartX + 1
 
-		if canMovePiece(newX, startY, &currentActiveTetrom, state.Grid) {
-			ClearPrevPiece(startX, startY, &currentActiveTetrom, state.Screen, state.Style)
-			startX = newX
-			ShowPiece(startX, startY, &currentActiveTetrom, state.Screen, state.Style, state.Grid)
+		if canMovePiece(state.NewX, state.StartY, &state.CurrentActiveTetrom, state.Grid) {
+			ClearPrevPiece(state.StartX, state.StartY, &state.CurrentActiveTetrom, state.Screen, state.Style)
+			state.StartX = state.NewX
+			ShowPiece(state)
 		}
-		displayGameStats(state.Screen, state.Style)
+		displayGameStats(state)
 		state.Screen.Show()
 	case tcell.KeyLeft:
 		drawText(state.Screen, 2, 1, "Left", state.Style)
 		drawText(state.Screen, 1, 1, fmt.Sprintf("Left",state.GameRunning), state.Style)
-		newX := startX - 1
+		state.NewX = state.StartX - 1
 
-		if canMovePiece(newX, startY, &currentActiveTetrom, state.Grid) {
-			ClearPrevPiece(startX, startY, &currentActiveTetrom, state.Screen, state.Style)
-			startX = newX
-			ShowPiece(startX, startY, &currentActiveTetrom, state.Screen, state.Style, state.Grid)
+		if canMovePiece(state.NewX, state.StartY, &state.CurrentActiveTetrom, state.Grid) {
+			ClearPrevPiece(state.StartX, state.StartY, &state.CurrentActiveTetrom, state.Screen, state.Style)
+			state.StartX = state.NewX
+			ShowPiece(state)
 		}
-		displayGameStats(state.Screen, state.Style)
+		displayGameStats(state)
 		state.Screen.Show()
 
 	case tcell.KeyDown:
 		drawText(state.Screen, 2, 1, "Down", state.Style)
-		newY := startY + 1
+		state.NewY = state.StartY + 1
 
-		if canMovePiece(startX, newY, &currentActiveTetrom, state.Grid) {
-			ClearPrevPiece(startX, startY, &currentActiveTetrom, state.Screen, state.Style)
-			startY = newY
-			score += 1
-			ShowPiece(startX, startY, &currentActiveTetrom, state.Screen, state.Style, state.Grid)
+		if canMovePiece(state.StartX, state.NewY, &state.CurrentActiveTetrom, state.Grid) {
+			ClearPrevPiece(state.StartX, state.StartY, &state.CurrentActiveTetrom, state.Screen, state.Style)
+			state.StartY = state.NewY
+			state.Score += 1
+			ShowPiece(state)
 		}
-		displayGameStats(state.Screen, state.Style)
+		displayGameStats(state)
 		state.Screen.Show()
 
 	case tcell.KeyUp:
 		drawText(state.Screen, 2, 1, "Up", state.Style)
-		newY := startY - 1
+		state.NewY = state.StartY -1
 
-		if canMovePiece(startX, newY, &currentActiveTetrom, state.Grid) {
-			ClearPrevPiece(startX, startY, &currentActiveTetrom, state.Screen, state.Style)
-			startY = newY
-			ShowPiece(startX, startY, &currentActiveTetrom, state.Screen, state.Style, state.Grid)
+		if canMovePiece(state.StartX, state.NewY, &state.CurrentActiveTetrom, state.Grid) {
+			ClearPrevPiece(state.StartX, state.StartY, &state.CurrentActiveTetrom, state.Screen, state.Style)
+			state.StartY = state.NewY
+			ShowPiece(state)
 		}
-		displayGameStats(state.Screen, state.Style)
+		displayGameStats(state)
 		state.Screen.Show()
 
 	case tcell.KeyRune:
 		switch ev.Rune() {
 		case 'r', 'R':
 			drawText(state.Screen, 2, 1, "Rotate", state.Style)
-			RotateTetrom(&currentActiveTetrom, startX, startY, state.Screen, state.Style, state.Grid)
-			displayGameStats(state.Screen, state.Style)
+			RotateTetrom(state)
+			displayGameStats(state)
 			state.Screen.Show()
 		}
 	}
 }
 
-
-func GenerateRandomTetromino() {
-	tetroType := rand.Intn(7)
-	currentTetroType = tetroType
-	currentRotation = 0
-	currentActiveTetrom = tetrominoes.AllTetrominos[tetroType][0]
-}
-
-func IsLineComplete(grid *grid.Grid, row int) bool {
-	for col := 0; col < grid.Width; col++ {
-		if grid.Data[row][col] == 0{
+func IsLineComplete(state *state.GameState, row int) bool {
+	for col := 0; col < state.Grid.Width; col++ {
+		if state.Grid.Data[row][col] == 0{
 			return false
 		}
 	}
 	return true
 }
 
-func ClearLine(grid *grid.Grid, lineIndex int) {
+func ClearLine(state *state.GameState, lineIndex int) {
 	for row := lineIndex; row > 0; row-- {
-		copy(grid.Data[row], grid.Data[row-1])
+		copy(state.Grid.Data[row], state.Grid.Data[row-1])
 	}
 
-	for col := 0; col < grid.Width; col++ {
-		grid.Data[0][col]=0
+	for col := 0; col < state.Grid.Width; col++ {
+		state.Grid.Data[0][col]=0
 	}
 }
 
-func ClearCompletedLines(grid *grid.Grid) int {
+func ClearCompletedLines(state *state.GameState) int {
 	linesCleared := 0
 
-	for row := grid.Height -1 ; row >= 0; row -- {
-		if IsLineComplete(grid, row) {
-			ClearLine(grid, row)
+	for row := state.Grid.Height-1 ; row >= 0; row -- {
+		if IsLineComplete(state, row) {
+			ClearLine(state, row)
 			linesCleared++
 			row++
 		}
 	}
 	if linesCleared > 0 {
-		score += CalculateScore(linesCleared)
+		state.Score += CalculateScore(linesCleared, state)
 	
-		totalLinesCleared += linesCleared
+		state.TotalLinesCleared += linesCleared
 		
-		UpdateLevel()
+		UpdateLevel(state)
 	}
 	
 	return linesCleared
 }
 
-func CalculateScore(linesCleared int) int{
+func CalculateScore(linesCleared int, state *state.GameState) int{
 	if linesCleared == 0 {
 		return 0
 	}
 	baseScore := lineScores[linesCleared]
-	return baseScore * level
+	return baseScore * state.Level
 }
 
-func UpdateLevel() {
-	newLevel := (totalLinesCleared / 10) +1
-	if newLevel != level {
-		level = newLevel
+func UpdateLevel(state *state.GameState) {
+	newLevel := ( state.TotalLinesCleared/ 10) +1
+	if newLevel != state.Level {
+		state.Level = newLevel
 
 		UpdateFallingSpeed()
 	}
 }
 
-func getFallingSpeed() time.Duration {
-	baseSpeed := 600 - (level-1)*50
+func getFallingSpeed(state *state.GameState) time.Duration {
+	baseSpeed := 600 - (state.Level-1)*50
 	if baseSpeed < 100 {
 		baseSpeed = 100
 	}
@@ -447,21 +412,21 @@ func getFallingSpeed() time.Duration {
 func UpdateFallingSpeed() {
 }
 
-func displayGameStats(s tcell.Screen, style tcell.Style) {
+func displayGameStats(state *state.GameState) {
 
-	scoreText := fmt.Sprintf("Score: %d", score)
-	drawText(s, 20, 8, scoreText, style.Foreground(tcell.ColorDarkCyan))
+	scoreText := fmt.Sprintf("Score: %d", state.Score)
+	drawText(state.Screen, 20, 8, scoreText, state.Style.Foreground(tcell.ColorDarkCyan))
 	
-	levelText := fmt.Sprintf("Level: %d", level)
-	drawText(s, 20, 9, levelText, style.Foreground(tcell.ColorGreen))
+	levelText := fmt.Sprintf("Level: %d", state.Level)
+	drawText(state.Screen, 20, 9, levelText, state.Style.Foreground(tcell.ColorGreen))
 	
-	linesText := fmt.Sprintf("Lines: %d", totalLinesCleared)
-	drawText(s, 20, 10, linesText, style.Foreground(tcell.ColorYellow))
+	linesText := fmt.Sprintf("Lines: %d", state.TotalLinesCleared)
+	drawText(state.Screen, 20, 10, linesText, state.Style.Foreground(tcell.ColorYellow))
 }
 
-func resetGameStats() {
-	score = 0
-	level = 1
-	totalLinesCleared = 0
+func resetGameStats(state *state.GameState) {
+	state.Score = 0
+	state.Level = 1
+	state.TotalLinesCleared = 0
 }
 
