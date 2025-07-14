@@ -4,7 +4,6 @@ import (
 	tetrominoes "tetris-game/Tetrominoes"
 	grid "tetris-game/grid"
 	state "tetris-game/state"
-
 	"github.com/gdamore/tcell/v2"
 )
 func InitGameState(s tcell.Screen) *state.GameState{
@@ -33,4 +32,12 @@ func InitGameState(s tcell.Screen) *state.GameState{
 		TotalLinesCleared: 0,
 	}
 
+}
+
+func ResetGame(state *state.GameState) {
+	for y := range state.Grid.Data {
+		for x := range state.Grid.Data[y] {
+			state.Grid.Data[y][x] = 0
+		}
+	}
 }
