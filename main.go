@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gdamore/tcell/v2"
 	"log"
 	game "tetris-game/game"
-	grid "tetris-game/grid"
 )
 
 func main() {
@@ -45,17 +43,5 @@ func main() {
 		case <-state.RestartChan:
 			game.InitializeGame(state)
 		}
-	}
-}
-
-func ShowGrid(grid *grid.Grid) {
-	data := grid.Data
-
-	for i := range data {
-		for j := range data[i] {
-			fmt.Print(data[i][j])
-		}
-		fmt.Println()
-
 	}
 }

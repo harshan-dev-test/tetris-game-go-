@@ -40,8 +40,6 @@ func UpdateLevel(state *state.GameState) {
 	newLevel := ( state.TotalLinesCleared/ 10) +1
 	if newLevel != state.Level {
 		state.Level = newLevel
-
-		UpdateFallingSpeed()
 	}
 }
 
@@ -49,9 +47,6 @@ func ResetGameStats(state *state.GameState) {
 	state.Score = 0
 	state.Level = 1
 	state.TotalLinesCleared = 0
-}
-
-func UpdateFallingSpeed() {
 }
 
 func GetFallingSpeed(state *state.GameState) time.Duration {

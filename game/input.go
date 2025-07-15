@@ -19,7 +19,7 @@ func HandleGameOverInput(ev *tcell.EventKey, state *state.GameState) {
 	case tcell.KeyRune:
 		switch ev.Rune() {
 		case 's', 'S':
-			utils.DrawText(state.Screen, 2, 1, "Restarting game...", state.Style.Foreground(tcell.ColorGreen))
+			utils.DrawText(state.Screen, 4, 4, "Restarting game...", state.Style.Foreground(tcell.ColorGreen))
 			state.Screen.Show()
 			time.Sleep(500 * time.Millisecond)
 			state.RestartChan <- true
@@ -42,7 +42,6 @@ func HandlerGameInput(ev *tcell.EventKey, state *state.GameState) {
 		state.Screen.Fini()
 		return
 	case tcell.KeyRight:
-		utils.DrawText(state.Screen, 2, 1, "Right", state.Style)
 		state.NewX = state.StartX + 1
 
 		if CanMovePiece(state.NewX, state.StartY, &state.CurrentActiveTetrom, state) {
@@ -53,7 +52,6 @@ func HandlerGameInput(ev *tcell.EventKey, state *state.GameState) {
 		DisplayGameStats(state)
 		state.Screen.Show()
 	case tcell.KeyLeft:
-		utils.DrawText(state.Screen, 2, 1, "Left", state.Style)
 		utils.DrawText(state.Screen, 1, 1, fmt.Sprintf("Left",state.GameRunning), state.Style)
 		state.NewX = state.StartX - 1
 
@@ -66,7 +64,6 @@ func HandlerGameInput(ev *tcell.EventKey, state *state.GameState) {
 		state.Screen.Show()
 
 	case tcell.KeyDown:
-		utils.DrawText(state.Screen, 2, 1, "Down", state.Style)
 		state.NewY = state.StartY + 1
 
 		if CanMovePiece(state.StartX, state.NewY, &state.CurrentActiveTetrom, state) {
@@ -79,24 +76,12 @@ func HandlerGameInput(ev *tcell.EventKey, state *state.GameState) {
 		state.Screen.Show()
 
 	case tcell.KeyUp:
-		utils.DrawText(state.Screen, 2, 1, "Up", state.Style)
-		state.NewY = state.StartY -1
-
-		if CanMovePiece(state.StartX, state.NewY, &state.CurrentActiveTetrom, state) {
-			ClearPrevPiece(state.StartX, state.StartY, &state.CurrentActiveTetrom, state.Screen, state.Style)
-			state.StartY = state.NewY
-			ShowPiece(state)
-		}
-		DisplayGameStats(state)
-		state.Screen.Show()
-
-	case tcell.KeyRune:
-		switch ev.Rune() {
-		case 'r', 'R':
-			utils.DrawText(state.Screen, 2, 1, "Rotate", state.Style)
 			RotateTetrom(state)
 			DisplayGameStats(state)
 			state.Screen.Show()
+
+	case tcell.KeyRune:
+		switch ev.Rune() {
 		case 'q', 'Q':
 			utils.DrawText(state.Screen, 2, 1, "Q pressed. Exiting.", state.Style.Foreground(tcell.ColorRed))
 			state.Screen.Show()

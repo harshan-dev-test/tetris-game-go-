@@ -5,7 +5,7 @@ import (
 )
 
 func DrawText(s tcell.Screen, x, y int, text string, style tcell.Style) {
-	clearLength := 20
+	clearLength := 30
 
 	for i := 0; i < clearLength; i++ {
 		s.SetContent(x+i, y, ' ', nil, style)

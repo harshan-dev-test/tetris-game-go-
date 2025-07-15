@@ -1,8 +1,10 @@
 package game
 
 import (
+	tetrominoes "tetris-game/Tetrominoes"
+	"tetris-game/grid"
 	state "tetris-game/state"
-	"tetris-game/Tetrominoes"
+
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -58,7 +60,7 @@ func CanMovePiece(newX, newY int, tetromen *[][]int, state *state.GameState) boo
 					return false
 				}
 
-				if state.Grid.Data[gridY][gridX] == 1 {
+				if state.Grid.Data[gridY][gridX].Filled {
 					return false
 				}
 
@@ -69,8 +71,8 @@ func CanMovePiece(newX, newY int, tetromen *[][]int, state *state.GameState) boo
 }
 
 func RotateTetrom(state *state.GameState) {
-	
-	nextRotation := (state.CurrentRotation+1) %4
+
+	nextRotation := (state.CurrentRotation + 1) % 4
 	tempPiece := tetrominoes.AllTetrominos[state.CurrentTetroType][nextRotation]
 
 	if CanMovePiece(state.StartX, state.StartY, &tempPiece, state) {
@@ -84,17 +86,16 @@ func RotateTetrom(state *state.GameState) {
 
 func LockGridTetro(newX, newY int, tetromone *[][]int, state *state.GameState) {
 	piece := *tetromone
+	color := tetrominoes.TetrominoColors[state.CurrentTetroType]
 	for i := 0; i < len(piece); i++ {
 		for j := 0; j < len(piece[i]); j++ {
 			if piece[i][j] == 1 {
 				cellX := newX + j - 6
 				cellY := newY + i - 6
-
 				if cellY >= 0 && cellY < state.Grid.Height && cellX >= 0 && cellX < state.Grid.Width {
-					state.Grid.Data[cellY][cellX] = 1
+					state.Grid.Data[cellY][cellX] = grid.Cell{Filled: true, Color: color}
 				}
 			}
 		}
 	}
 }
-

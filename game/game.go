@@ -2,17 +2,19 @@ package game
 
 import (
 	"fmt"
-	"tetris-game/Tetrominoes"
+	tetrominoes "tetris-game/Tetrominoes"
 	state "tetris-game/state"
 	"tetris-game/utils"
 	"time"
+
+	"tetris-game/grid"
 
 	"github.com/gdamore/tcell/v2"
 )
 
 func IsLineComplete(state *state.GameState, row int) bool {
 	for col := 0; col < state.Grid.Width; col++ {
-		if state.Grid.Data[row][col] == 0{
+		if !state.Grid.Data[row][col].Filled {
 			return false
 		}
 	}
@@ -25,14 +27,14 @@ func ClearLine(state *state.GameState, lineIndex int) {
 	}
 
 	for col := 0; col < state.Grid.Width; col++ {
-		state.Grid.Data[0][col]=0
+		state.Grid.Data[0][col] = grid.Cell{Filled: false, Color: tcell.ColorDefault}
 	}
 }
 
 func ClearCompletedLines(state *state.GameState) int {
 	linesCleared := 0
 
-	for row := state.Grid.Height-1 ; row >= 0; row -- {
+	for row := state.Grid.Height - 1; row >= 0; row-- {
 		if IsLineComplete(state, row) {
 			ClearLine(state, row)
 			linesCleared++
@@ -41,12 +43,12 @@ func ClearCompletedLines(state *state.GameState) int {
 	}
 	if linesCleared > 0 {
 		state.Score += CalculateScore(linesCleared, state)
-	
+
 		state.TotalLinesCleared += linesCleared
-		
+
 		UpdateLevel(state)
 	}
-	
+
 	return linesCleared
 }
 
@@ -65,7 +67,7 @@ func FallingPieceLoop(state *state.GameState) {
 		}
 
 		state.NewY = state.StartY + 1
-		
+
 		if CanMovePiece(state.StartX, state.NewY, &state.CurrentActiveTetrom, state) {
 			ClearPrevPiece(state.StartX, state.StartY, &state.CurrentActiveTetrom, state.Screen, state.Style)
 			state.StartY = state.NewY
@@ -91,7 +93,7 @@ func FallingPieceLoop(state *state.GameState) {
 					lineType = "TETRIS!"
 				}
 				linesClearedText := fmt.Sprintf("%s +%d pts", lineType, CalculateScore(linesCleared, state))
-				utils.DrawText(state.Screen, 20, 12, linesClearedText, state.Style.Foreground(tcell.ColorRed))
+				utils.DrawText(state.Screen, 30, 12, linesClearedText, state.Style.Foreground(tcell.ColorRed))
 			}
 
 			tetrominoes.GenerateRandomTetromino(state)
@@ -116,7 +118,7 @@ func FallingPieceLoop(state *state.GameState) {
 func ResetGame(state *state.GameState) {
 	for y := range state.Grid.Data {
 		for x := range state.Grid.Data[y] {
-			state.Grid.Data[y][x] = 0
+			state.Grid.Data[y][x] = grid.Cell{Filled: false, Color: tcell.ColorDefault}
 		}
 	}
 }
@@ -136,7 +138,7 @@ func InitializeGame(state *state.GameState) {
 	state.Screen.Clear()
 
 	state.Grid.DrawGrid(state.Screen, state.Grid, 5, 5, state.Style.Foreground(tcell.ColorWhite))
-	utils.DrawText(state.Screen, 2, 2, "TETRIS - Press Q to quit", state.Style.Foreground(tcell.ColorBlue))
+	utils.DrawText(state.Screen, 4, 2, "TETRIS - Press Q to quit", state.Style.Foreground(tcell.ColorBlue))
 
 	DisplayGameStats(state)
 
