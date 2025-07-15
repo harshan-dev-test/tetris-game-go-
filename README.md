@@ -29,7 +29,7 @@ go mod tidy
 ```
 
 ### 4. Run the Game
-You can run the game in two ways:
+You can run the game in three ways:
 
 #### a) Developer Mode (with live reloading)
 If you have [Air](https://github.com/cosmtrek/air) installed:
@@ -42,9 +42,11 @@ air
 go run .
 ```
 
-#### c) Directly run exe
+#### c) Run the Executable
+If you have built the executable or downloaded it:
+> 💡 *Note: Use `./` to run an executable in the current directory on Windows or Linux.*
 ```
-run tetris-game.exe
+./tetris-game.exe
 ```
 
 ## Game Controls
