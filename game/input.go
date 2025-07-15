@@ -52,7 +52,6 @@ func HandlerGameInput(ev *tcell.EventKey, state *state.GameState) {
 		DisplayGameStats(state)
 		state.Screen.Show()
 	case tcell.KeyLeft:
-		utils.DrawText(state.Screen, 1, 1, fmt.Sprintf("Left",state.GameRunning), state.Style)
 		state.NewX = state.StartX - 1
 
 		if CanMovePiece(state.NewX, state.StartY, &state.CurrentActiveTetrom, state) {
