@@ -31,13 +31,4 @@ func InitGameState(s tcell.Screen) *state.GameState{
 		Level: 0,
 		TotalLinesCleared: 0,
 	}
-
-}
-
-func ResetGame(state *state.GameState) {
-	for y := range state.Grid.Data {
-		for x := range state.Grid.Data[y] {
-			state.Grid.Data[y][x] = 0
-		}
-	}
 }

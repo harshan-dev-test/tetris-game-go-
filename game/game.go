@@ -113,6 +113,14 @@ func FallingPieceLoop(state *state.GameState) {
 	}
 }
 
+func ResetGame(state *state.GameState) {
+	for y := range state.Grid.Data {
+		for x := range state.Grid.Data[y] {
+			state.Grid.Data[y][x] = 0
+		}
+	}
+}
+
 func InitializeGame(state *state.GameState) {
 
 	state.GameOver = false
