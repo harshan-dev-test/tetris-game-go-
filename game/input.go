@@ -1,8 +1,6 @@
 package game
 
 import (
-	// "math/rand"
-	"fmt"
 	"os"
 	"tetris-game/state"
 	"tetris-game/utils"
