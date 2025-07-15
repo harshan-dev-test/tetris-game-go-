@@ -3,6 +3,7 @@ package game
 import (
 	// "math/rand"
 	"fmt"
+	"os"
 	"tetris-game/state"
 	"tetris-game/utils"
 	"time"
@@ -26,6 +27,7 @@ func HandleGameOverInput(ev *tcell.EventKey, state *state.GameState) {
 			utils.DrawText(state.Screen, 2, 1, "Q pressed. Exiting.", state.Style.Foreground(tcell.ColorRed))
 			state.Screen.Show()
 			state.Screen.Fini()
+			os.Exit(0)
 			return
 		}
 	}
@@ -95,6 +97,12 @@ func HandlerGameInput(ev *tcell.EventKey, state *state.GameState) {
 			RotateTetrom(state)
 			DisplayGameStats(state)
 			state.Screen.Show()
+		case 'q', 'Q':
+			utils.DrawText(state.Screen, 2, 1, "Q pressed. Exiting.", state.Style.Foreground(tcell.ColorRed))
+			state.Screen.Show()
+			state.Screen.Fini()
+			os.Exit(0)
+			return
 		}
 	}
 }

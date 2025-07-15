@@ -15,7 +15,7 @@ func ShowPiece(state *state.GameState) {
 			cellY := state.StartY + i
 
 			if piece[i][j] == 1 {
-				if cellX < 6 || cellX > 15 || cellY < 6 || cellY > 25 {
+				if cellX < 6 || cellX > 25 || cellY < 6 || cellY > 35 {
 					continue
 				}
 
@@ -33,7 +33,7 @@ func ClearPrevPiece(startX, startY int, tetromen *[][]int, s tcell.Screen, style
 			cellX := startX + j
 			cellY := startY + i
 			if piece[i][j] == 1 {
-				if cellX < 6 || cellX > 15 || cellY < 6 || cellY > 25 {
+				if cellX < 6 || cellX > 25 || cellY < 6 || cellY > 35 {
 					continue
 				}
 				s.SetContent(cellX, cellY, ' ', nil, style.Background(tcell.ColorDarkGray))

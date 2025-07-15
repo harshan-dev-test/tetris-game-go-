@@ -29,21 +29,6 @@ func (g *Grid)DrawGrid(s tcell.Screen, grid *Grid, startX, startY int, style tce
 	height := grid.Height
 	data := grid.Data
 
-	for x := 0; x <= width+1; x++ {
-		s.SetContent(startX+x, startY, '─', nil, style)
-		s.SetContent(startX+x, startY+height+1, '─', nil, style)
-	}
-
-	for y := 0; y <= height+1; y++ {
-		s.SetContent(startX, startY+y, '|', nil, style)
-		s.SetContent(startX+width+1, startY+y, '|', nil, style)
-	}
-
-	s.SetContent(startX, startY, '┌', nil, style)
-	s.SetContent(startX+width+1, startY, '┐', nil, style)
-	s.SetContent(startX, startY+height+1, '└', nil, style)
-	s.SetContent(startX+width+1, startY+height+1, '┘', nil, style)
-
 	for i := 0; i < height; i++ {
 		for j := 0; j < width; j++ {
 			cellX := startX + j + 1

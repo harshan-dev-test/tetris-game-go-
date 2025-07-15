@@ -19,13 +19,13 @@ var lineScores = map[int]int{
 func DisplayGameStats(state *state.GameState) {
 
 	scoreText := fmt.Sprintf("Score: %d", state.Score)
-	utils.DrawText(state.Screen, 20, 8, scoreText, state.Style.Foreground(tcell.ColorDarkCyan))
+	utils.DrawText(state.Screen, 30, 8, scoreText, state.Style.Foreground(tcell.ColorDarkCyan))
 	
 	levelText := fmt.Sprintf("Level: %d", state.Level)
-	utils.DrawText(state.Screen, 20, 9, levelText, state.Style.Foreground(tcell.ColorGreen))
+	utils.DrawText(state.Screen, 30, 9, levelText, state.Style.Foreground(tcell.ColorGreen))
 	
 	linesText := fmt.Sprintf("Lines: %d", state.TotalLinesCleared)
-	utils.DrawText(state.Screen, 20, 10, linesText, state.Style.Foreground(tcell.ColorYellow))
+	utils.DrawText(state.Screen, 30, 10, linesText, state.Style.Foreground(tcell.ColorYellow))
 }
 
 func CalculateScore(linesCleared int, state *state.GameState) int{

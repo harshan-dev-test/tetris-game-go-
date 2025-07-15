@@ -13,7 +13,7 @@ func InitGameState(s tcell.Screen) *state.GameState{
 
 	return &state.GameState{
 		Screen: s,
-		Grid: grid.NewGrid(10,20),
+		Grid: grid.NewGrid(20,30),
 		Style: defStyle,
 		CurrentActiveTetrom: tetrominoes.T[0],
 		TempRandomTetrom: tetrominoes.T[0],
