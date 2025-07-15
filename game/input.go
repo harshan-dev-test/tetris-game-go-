@@ -9,6 +9,9 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+// Handle game over input events
+// 's' or 'S' restart the game
+// 'q' or 'Q' quit the game
 func HandleGameOverInput(ev *tcell.EventKey, state *state.GameState) {
 	switch ev.Key() {
 	case tcell.KeyEscape:
@@ -31,14 +34,15 @@ func HandleGameOverInput(ev *tcell.EventKey, state *state.GameState) {
 	}
 }
 
+// Handle normal game input events
+
+// Up Arrow: Rotate the tetromino
+// Down Arrow: Move the tetromino down faster
+// Left Arrow: Move the tetromino left
+// Right Arrow: Move the tetromino right
 func HandlerGameInput(ev *tcell.EventKey, state *state.GameState) {
 
 	switch ev.Key() {
-	case tcell.KeyEscape:
-		utils.DrawText(state.Screen, 2, 1, "ESC pressed. Exiting...", state.Style)
-		state.Screen.Show()
-		state.Screen.Fini()
-		return
 	case tcell.KeyRight:
 		state.NewX = state.StartX + 1
 
@@ -49,6 +53,7 @@ func HandlerGameInput(ev *tcell.EventKey, state *state.GameState) {
 		}
 		DisplayGameStats(state)
 		state.Screen.Show()
+
 	case tcell.KeyLeft:
 		state.NewX = state.StartX - 1
 

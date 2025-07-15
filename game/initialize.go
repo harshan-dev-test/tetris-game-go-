@@ -6,6 +6,8 @@ import (
 	state "tetris-game/state"
 	"github.com/gdamore/tcell/v2"
 )
+
+// Initialize game state with default values
 func InitGameState(s tcell.Screen) *state.GameState{
 
 	defStyle := tcell.StyleDefault.Background(tcell.ColorReset).Foreground(tcell.ColorReset)

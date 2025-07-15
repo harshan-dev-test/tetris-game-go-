@@ -6,8 +6,8 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+// GameState holds all the information about the current state of the Tetris game.
 type GameState struct {
-
 	Screen tcell.Screen
 	Grid *grid.Grid
 	Style tcell.Style
@@ -31,7 +31,4 @@ type GameState struct {
 	Score int
 	Level int
 	TotalLinesCleared int
-
 }
-
-

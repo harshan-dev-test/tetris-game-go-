@@ -4,6 +4,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+// I-piece (Turquoise)
 var I = [4][][]int{
 	{
 		{0, 0, 0, 0},
